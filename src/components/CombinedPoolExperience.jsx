@@ -576,10 +576,10 @@ const CombinedPoolExperience = () => {
   return (
     <div
       style={{
-        position: "relative", 
+        position: "relative",
         width: "1280px",
         height: "832px",
-        margin: "0 auto", 
+        margin: "0 auto",
         background: "white",
       }}
     >
@@ -590,7 +590,7 @@ const CombinedPoolExperience = () => {
           top: 0,
           left: 0,
           width: "100%",
-          height: "832px",
+          height: "100%",
           zIndex: 2,
           pointerEvents: "auto",
         }}
@@ -601,7 +601,7 @@ const CombinedPoolExperience = () => {
           top: 0,
           left: 0,
           width: "100%",
-          height: "832px",
+          height: "100%",
           zIndex: 0,
           pointerEvents: "auto",
         }}
