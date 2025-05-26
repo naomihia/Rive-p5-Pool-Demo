@@ -52,7 +52,7 @@ const CombinedPoolExperience = () => {
     const vmi = rive.viewModelInstance;
     if (!vmi) return;
 
-    //CUE STICK INITIATION
+    // CUE STICK 
     const cueStickInputs = rive.stateMachineInputs("CueStick");
     if (!cueStickInputs) {
       return;

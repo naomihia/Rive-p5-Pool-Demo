@@ -1,7 +1,21 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
-})
+  plugins: [react()], // Activate the React plugin
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('node_modules/p5')) return 'p5';
+            if (id.includes('node_modules/matter-js')) return 'matter';
+            if (id.includes('node_modules/@rive-app')) return 'rive';
+            return 'vendor';
+          }
+        }
+      }
+    },
+    chunkSizeWarningLimit: 2000,
+  }
+});
