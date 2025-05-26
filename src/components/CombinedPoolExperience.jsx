@@ -93,7 +93,7 @@ const CombinedPoolExperience = () => {
   useEffect(() => {
     const bodies = physicsBodiesRef.current;
     if (!bodies || Object.keys(initialBallPositions.current).length > 0) return;
-  
+
     Object.entries(bodies).forEach(([key, body]) => {
       initialBallPositions.current[key] = { ...body.position };
     });
@@ -137,13 +137,21 @@ const CombinedPoolExperience = () => {
         const h = p5ContainerRef.current.offsetHeight;
         p.createCanvas(w, h);
         p.pixelDensity(1);
+        p.frameRate(30);
 
+        setupPhysicsWorld();     // ← Modular
+        spawnBalls();            // ← Modular
+        createWalls();           // ← Modular
+      };
+
+      function setupPhysicsWorld() {
         engine = Matter.Engine.create();
         engineRef.current = engine;
         world = engine.world;
         engine.world.gravity.y = 0;
+      }
 
-
+      function spawnBalls() {
         const props = rivePropsRef.current;
         BALL_KEYS.forEach((key) => {
           const prefix = key === "cue" ? "CueBall" : `${key}Ball`;
@@ -166,22 +174,27 @@ const CombinedPoolExperience = () => {
 
         Matter.World.add(world, Object.values(balls));
         physicsBodiesRef.current = balls;
+
         Object.entries(balls).forEach(([key, body]) => {
           initialBallPositions.current[key] = { ...body.position };
         });
+      }
 
-
+      function createWalls() {
         const wallThickness = 20;
         walls = [
+          // Top
           Matter.Bodies.rectangle((TABLE_BOUNDS.xMin + TABLE_BOUNDS.xMax) / 2, TABLE_BOUNDS.yMin - wallThickness / 2, TABLE_BOUNDS.xMax - TABLE_BOUNDS.xMin, wallThickness, { isStatic: true, restitution: 0.9 }),
+          // Bottom
           Matter.Bodies.rectangle((TABLE_BOUNDS.xMin + TABLE_BOUNDS.xMax) / 2, TABLE_BOUNDS.yMax + wallThickness / 2, TABLE_BOUNDS.xMax - TABLE_BOUNDS.xMin, wallThickness, { isStatic: true, restitution: 0.9 }),
+          // Left
           Matter.Bodies.rectangle(TABLE_BOUNDS.xMin - wallThickness / 2, (TABLE_BOUNDS.yMin + TABLE_BOUNDS.yMax) / 2, wallThickness, TABLE_BOUNDS.yMax - TABLE_BOUNDS.yMin, { isStatic: true, restitution: 0.9 }),
+          // Right
           Matter.Bodies.rectangle(TABLE_BOUNDS.xMax + wallThickness / 2, (TABLE_BOUNDS.yMin + TABLE_BOUNDS.yMax) / 2, wallThickness, TABLE_BOUNDS.yMax - TABLE_BOUNDS.yMin, { isStatic: true, restitution: 0.9 }),
         ];
 
         Matter.World.add(world, walls);
-
-      };
+      }
 
 
 
@@ -217,13 +230,22 @@ const CombinedPoolExperience = () => {
       };
 
       const rerackButton = {
-        x: 300, 
+        x: 300,
         y: 245,
         w: 120,
         h: 60,
       };
 
       p.draw = () => {
+        //ENGINE TIME-OUT AFTER INACTIVITY
+        const now = Date.now();
+
+        if (p._loop && now - lastInteractionTime > IDLE_TIMEOUT) {
+          console.log("💤 Going idle to save CPU");
+          p.noLoop();
+          return;
+        }
+
         if (!engine) return;
 
         p.clear();
@@ -384,9 +406,9 @@ const CombinedPoolExperience = () => {
 
 
         //DEBUGGING VISUALS - MOUSE FOLLOW      
-       // p.fill(0, 255, 0);
-       // p.noStroke();
-       // p.ellipse(p.mouseX, p.mouseY, 10, 10);
+        // p.fill(0, 255, 0);
+        // p.noStroke();
+        // p.ellipse(p.mouseX, p.mouseY, 10, 10);
 
 
         // Draw Aim line
@@ -411,13 +433,13 @@ const CombinedPoolExperience = () => {
         const bodies = physicsBodiesRef.current;
         const sunkBalls = sunkBallsRef.current;
         const sunkTargets = sunkTargetsRef.current;
-      
+
         // Clear sunk balls and targets when reracking
         sunkBalls.length = 0;
         for (const key in sunkTargets) {
           delete sunkTargets[key];
         }
-      
+
         Object.entries(initialBallPositions.current).forEach(([key, pos]) => {
           const body = bodies[key];
           Matter.Body.setPosition(body, pos);
@@ -426,15 +448,22 @@ const CombinedPoolExperience = () => {
           Matter.Body.setAngularVelocity(body, 0);
           Matter.Body.setStatic(body, false);
         });
-    
-        
+
+
       }
 
+      let lastInteractionTime = Date.now();
+      const IDLE_TIMEOUT = 5000;
 
 
 
-      
       p.mouseMoved = () => {
+        lastInteractionTime = Date.now();
+        if (!p._loop) {
+          //  console.log("🔄 Resuming loop from mouse move");
+          p.loop();
+        }
+
         if (!showModal) return;
 
         const modalInputs = rive?.stateMachineInputs("8BallModal");
@@ -490,6 +519,11 @@ const CombinedPoolExperience = () => {
 
 
       p.mousePressed = () => {
+        lastInteractionTime = Date.now();
+        if (!p._loop) {
+          //    console.log("🔄 Resuming loop from click");
+          p.loop();
+        }
         const cue = physicsBodiesRef.current.cue;
         if (!cue) return;
 
@@ -555,11 +589,11 @@ const CombinedPoolExperience = () => {
         const xProp = props[`${prefix}X`];
         const yProp = props[`${prefix}Y`];
 
-        const canvas = document.querySelector('canvas'); 
+        const canvas = document.querySelector('canvas');
         const { width, height } = canvas;
         const { x, y } = p5ToRive(body.position.x, body.position.y, width, height);
 
-        
+
         if (xProp && yProp) {
           xProp.value = x;
           yProp.value = y;
@@ -574,7 +608,7 @@ const CombinedPoolExperience = () => {
   }, [rive]);
 
   return (
-    <div
+    <div className="container"
       style={{
         position: "relative",
         width: "1280px",
