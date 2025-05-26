@@ -66,3 +66,32 @@ html, body {
   height: 100%;
   width: 100%;
 } */
+
+
+
+
+.container {
+  margin: 0 auto;
+  background: white;
+}
+
+@media (min-width: 1281px) {
+  .container {
+    width: 1280px;
+    height: 832px;
+  }
+}
+
+@media (max-width: 1280px) and (min-width: 641px) {
+  .container {
+    width: 640px;
+    height: 416px;
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    width: 320px;
+    height: 208px;
+  }
+}
