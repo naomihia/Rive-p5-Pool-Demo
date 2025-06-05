@@ -165,7 +165,7 @@ const CombinedPoolExperience = () => {
           }
           const pos = riveToP5(startX, startY, p.width, p.height);
           balls[key] = Matter.Bodies.circle(pos.x, pos.y, BALL_RADIUS, {
-            restitution: 0.9,
+            restitution: 0.6,
             friction: 0.005,
             frictionAir: 0.04,
             label: key,
@@ -553,7 +553,20 @@ const CombinedPoolExperience = () => {
           const dx = aimStart.x - p.mouseX;
           const dy = aimStart.y - p.mouseY;
           const forceScale = 0.0003;
-          Matter.Body.applyForce(cue, cue.position, { x: dx * forceScale, y: dy * forceScale });
+       
+          // Calculate raw force vector
+          let forceX = dx * forceScale;
+          let forceY = dy * forceScale;
+
+          // Clamp max force magnitude
+          const maxForce = 0.18; 
+          const mag = Math.sqrt(forceX * forceX + forceY * forceY);
+          if (mag > maxForce) {
+            forceX = (forceX / mag) * maxForce;
+            forceY = (forceY / mag) * maxForce;
+          }
+
+          Matter.Body.applyForce(cue, cue.position, { x: forceX, y: forceY });
 
           aiming = false;
           aimStart = null;
