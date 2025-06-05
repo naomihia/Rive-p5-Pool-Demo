@@ -396,13 +396,12 @@ const CombinedPoolExperience = () => {
           p.text("RERACK", rerackButton.x + rerackButton.w / 2, rerackButton.y + rerackButton.h / 2);
           p.pop();
 
-        });
-
-
-        // Optional Ball Visual Aid
+        //         // Optional Ball Visual Aid
         // p.fill(255, 0, 0, 127);
         // p.noStroke();
         // p.circle(drawX, drawY, BALL_RADIUS * 2);
+
+        });
 
 
         //DEBUGGING VISUALS - MOUSE FOLLOW      
